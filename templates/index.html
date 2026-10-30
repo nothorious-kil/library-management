@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de bibliothèque</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        
+        <!-- EN-TÊTE -->
+        <header>
+            <h1>Ma bibliothèque</h1>
+            <p class="subtitle">Une vue claire de vos lectures, des livres à découvrir et de ceux déjà terminés.</p>
+        </header>
+        
+        <!-- STATISTIQUES -->
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ stats.total }}</span>
+                <span class="stat-label">Livres totaux</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ stats.lus }}</span>
+                <span class="stat-label">Livres lus</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ stats.en_cours }}</span>
+                <span class="stat-label">En cours</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ stats.note_moyenne }}</span>
+                <span class="stat-label">Note moyenne</span>
+            </div>
+        </div>
+        
+        <!-- FORMULAIRE D'AJOUT -->
+        <form action="{{ url_for('ajouter') }}" method="POST" class="form-add">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="titre">Titre du livre</label>
+                    <input id="titre" type="text" name="titre" placeholder="Ex. Le grand Meaulnes" required>
+                </div>
+                <div class="form-group">
+                    <label for="auteur">Auteur</label>
+                    <input id="auteur" type="text" name="auteur" placeholder="Ex. Alain-Fournier" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="genre">Genre</label>
+                    <input id="genre" type="text" name="genre" placeholder="Ex. Roman" required>
+                </div>
+                <div class="form-group">
+                    <label for="annee">Année de publication</label>
+                    <input id="annee" type="number" name="annee" placeholder="Ex. 1913" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-add">Ajouter à la bibliothèque</button>
+        </form>
+        
+        <!-- FILTRES -->
+        <div class="filters">
+            <h3>Filtrer par genre</h3>
+            <div class="filter-buttons">
+                    <a href="{{ url_for('index') }}" class="filter-btn">Tous</a>
+                
+                <!-- Filtrer par genre -->
+                {% for genre in genres %}
+                    <a href="{{ url_for('par_genre', genre=genre) }}" class="filter-btn">
+                        {{ genre }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- LISTE DES LIVRES -->
+        <section class="livres-section">
+            {% if livres %}
+                <ul class="livres-list">
+                    {% for livre in livres %}
+                        <li class="livre-item">
+                            <div class="livre-header">
+                                <div class="livre-info">
+                                    <h3>{{ livre.titre }}</h3>
+                                    <p class="livre-auteur">{{ livre.auteur }}</p>
+                                    <div class="livre-meta">
+                                        <span class="genre-badge">{{ livre.genre }}</span>
+                                        <span class="annee">{{ livre.annee }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- STATUT -->
+                                <div class="livre-statut">
+                                    <span class="statut-badge statut-{{ livre.statut|lower|replace(' ', '-') }}">
+                                        {{ livre.statut }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- ACTIONS -->
+                            <div class="livre-actions">
+                                <!-- Boutons de statut -->
+                                <form action="{{ url_for('en_cours', index=livre.index) }}" method="POST" class="form-inline">
+                                    <button type="submit" class="btn btn-small btn-en-cours">En cours</button>
+                                </form>
+                                
+                                <form action="{{ url_for('lu', index=livre.index) }}" method="POST" class="form-inline">
+                                    <button type="submit" class="btn btn-small btn-lu">Marquer comme lu</button>
+                                </form>
+                                
+                                <!-- Note -->
+                                <form action="{{ url_for('noter', index=livre.index) }}" method="POST" class="form-inline">
+                                    <input type="number" name="note" min="0" max="5" value="{{ livre.note }}" class="input-note">
+                                    <button type="submit" class="btn btn-small btn-note">Enregistrer la note</button>
+                                </form>
+                                
+                                <!-- Supprimer -->
+                                <form action="{{ url_for('supprimer', index=livre.index) }}" method="POST" class="form-inline">
+                                    <button type="submit" class="btn btn-small btn-delete">Supprimer</button>
+                                </form>
+                            </div>
+                            
+                            <!-- AVIS -->
+                            {% if livre.avis %}
+                                <div class="livre-avis">
+                                    <p><strong>Avis :</strong> {{ livre.avis }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="livre-footer">
+                                <small>Ajouté le : {{ livre.date_ajout }}</small>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>Aucun livre dans votre bibliothèque</p>
+                    <p class="empty-hint">Ajoutez votre premier livre avec le formulaire ci-dessus.</p>
+                </div>
+            {% endif %}
+        </section>
+        
+    </div>
+</body>
+</html>
